@@ -1,5 +1,5 @@
 import {Card, BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./paymentMethods";
-import {GatewayType} from "./providers/index";
+import {GatewayType} from "./providers";
 
 export interface CreateTransactionRequest {
     id: string;
