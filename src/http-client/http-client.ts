@@ -26,7 +26,7 @@ export class HttpClient {
         if (Object.keys(this.authHeaders).length > 0) {
             throw Error("Authentication method is already set");
         }
-        this.authHeaders["X-API-KEY"] = secret;
+        this.authHeaders["api-key"] = secret;
         return this;
     }
 
