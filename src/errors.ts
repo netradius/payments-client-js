@@ -1,9 +1,4 @@
-export class PaymentError extends Error {
-    readonly statusCode: number;
-}
-
-export class ValidationError extends PaymentError {
-    readonly statusCode = 400;
+export class ValidationError extends Error {
 
     constructor(message: string) {
         super(message);
@@ -11,38 +6,34 @@ export class ValidationError extends PaymentError {
     }
 }
 
-export class ForbiddenError extends PaymentError {
-    readonly statusCode = 403;
+export class BadRequestError extends Error {
 
-    constructor() {
-        super("Forbidden");
+    constructor(message: string) {
+        super(message);
+        this.name = "BadRequestError";
+    }
+}
+
+export class ForbiddenError extends Error {
+
+    constructor(message: string) {
+        super(message);
         this.name = "ForbiddenError";
     }
 }
 
-export class NotFoundError extends PaymentError {
-    readonly statusCode = 404;
+export class NotFoundError extends Error {
 
-    constructor() {
-        super("NotFound");
+    constructor(message: string) {
+        super(message);
         this.name = "NotFoundError";
     }
 }
 
-export class ConflictError extends PaymentError {
-    readonly statusCode = 409;
+export class InternalServerError extends Error {
 
-    constructor() {
-        super("Conflict");
-        this.name = "ConflictError";
-    }
-}
-
-export class NotImplementedError extends PaymentError {
-    readonly statusCode = 501;
-
-    constructor() {
-        super("NotImplemented");
-        this.name = "NotImplementedError";
+    constructor(message: string) {
+        super(message);
+        this.name = "InternalServerError";
     }
 }
