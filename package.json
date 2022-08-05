@@ -1,0 +1,23 @@
+{
+  "name": "payments-client",
+  "description": "Payments JavaScript client library",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netradius/payments-client-js.git"
+  },
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest"
+  }
+}
