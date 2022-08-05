@@ -1,12 +1,5 @@
-import {BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./paymentMethods";
-import {Card} from "./cards";
-import {GatewayType} from "./providers";
-import {BankAccount} from "./bankAccounts";
-
-
-export interface ListTransactionsRequest {
-    tenantId: string;
-}
+import {Card, BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./paymentMethods";
+import {GatewayType} from "./providers/index";
 
 export interface CreateTransactionRequest {
     id: string;
@@ -20,13 +13,7 @@ export interface CreateTransactionRequest {
 }
 
 export interface GetTransactionRequest {
-    tenantId: string;
     id: string;
-}
-
-export interface ProcessTransactionRequest {
-    tenantId: string;
-    transactionId: string;
 }
 
 export interface TransactionSummary {
@@ -53,7 +40,6 @@ export interface TransactionPaymentMethod {
     type: PaymentMethodType;
     billingDetails: BillingDetails;
     card?: Card;
-    bankAccount?: BankAccount;
 }
 
 export interface TransactionEvent {
@@ -65,9 +51,5 @@ export interface TransactionEvent {
     details?: object;
 }
 
-export enum TransactionStatus {
-    Created = "Created",
-    Processing = "Processing",
-    Successful = "Successful",
-    Failed = "PaymentFailed",
-}
+export type TransactionStatus = "Created"|"Processing"|"Successful"|"PaymentFailed";
+

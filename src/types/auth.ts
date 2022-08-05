@@ -1,7 +1,3 @@
-export interface CreateApiKeyRequest {
-    readonly id: string;
-    readonly tenantId: string;
-}
 
 export interface ApiKey {
     readonly id: string;

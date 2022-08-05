@@ -75,6 +75,10 @@ export class HttpRequest {
     post(): HttpPostRequest {
         return new HttpPostRequest(this);
     }
+
+    put(): HttpPutRequest {
+        return new HttpPutRequest(this);
+    }
 }
 
 export class HttpGetRequest {
@@ -168,6 +172,73 @@ export class HttpPostRequest {
         }
         const res = await fetch(url, {
             method: "POST",
+            headers: this.headers,
+            body
+        });
+        return new HttpResponse(res);
+    }
+}
+
+export class HttpPutRequest {
+
+    readonly request: HttpRequest;
+    headers: Headers;
+    parameters: Parameters;
+    body: string | object;
+
+    constructor(request: HttpRequest) {
+        this.request = request;
+        this.headers = {
+            ...request.headers
+        }
+    }
+
+    formData(name: string, value: string): HttpPutRequest {
+        if (this.body !== undefined) {
+            throw new Error("Body already set");
+        }
+        if (this.parameters === undefined) {
+            this.parameters = {}
+        }
+        this.parameters[name] = value;
+        if (!("Content-Type" in this.headers)) {
+            this.headers["Content-Type"] = "application/x-www-form-urlencoded";
+        }
+        return this;
+    }
+
+    json(body: string | object, contentType?: string): HttpPutRequest {
+        if (this.parameters !== undefined) {
+            throw new Error('Parameters already set');
+        }
+        this.body = body;
+        this.headers["Content-Type"] = contentType ?? "application/json";
+        return this;
+    }
+
+    text(body: string, contentType?: string): HttpPutRequest {
+        this.body = body;
+        this.headers["Content-Type"] = contentType ?? "text/plain";
+        return this;
+    }
+
+    async send(): Promise<HttpResponse> {
+        let url = this.request.client.baseUrl + this.request.path;
+        let body = undefined;
+        if (this.parameters !== undefined) {
+            body = new URLSearchParams(this.parameters);
+        } else if (this.body !== undefined) {
+            if (typeof this.body === "string") {
+                body = this.body;
+            } else {
+                body = JSON.stringify(this.body);
+            }
+            // TODO Add Content-Length
+        } else {
+            this.headers["Content-Length"] = "0";
+        }
+        const res = await fetch(url, {
+            method: "PUT",
             headers: this.headers,
             body
         });
