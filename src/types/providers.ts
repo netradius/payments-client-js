@@ -1,5 +1,3 @@
-import {TransactionPaymentMethod} from "./transactions";
-
 export interface CreateProviderRequest {
     readonly name: string;
     readonly tenantId: string;
@@ -17,15 +15,6 @@ export interface UpdateProviderRequest {
     readonly tenantId: string;
     readonly name: string;
     readonly configuration: object;
-}
-
-export interface ProcessTransactionRequest {
-    tenantId: string;
-    transactionId: string;
-    providerId: string;
-    amount: number;
-    currencyCode: string;
-    paymentMethod: TransactionPaymentMethod;
 }
 
 export interface ProviderData {
