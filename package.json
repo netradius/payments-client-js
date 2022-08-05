@@ -19,5 +19,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "url": "^0.11.0"
   }
 }
