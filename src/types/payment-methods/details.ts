@@ -1,11 +1,13 @@
 import {CardDetails} from "./cards";
+import {BankAccountDetails} from "./bank-accounts";
 
-export type PaymentMethodType = "Card";
+export type PaymentMethodType = "Card"|"BankAccount";
 
 export interface PaymentMethodDetails {
     type: PaymentMethodType;
     billingDetails: BillingDetails;
     card?: CardDetails;
+    bankAccount?: BankAccountDetails;
 }
 
 export interface BillingDetails {

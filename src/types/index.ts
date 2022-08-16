@@ -1,5 +1,5 @@
 export * from "./auth";
-export * from "./paymentMethods";
+export * from "./payment-methods";
 export * from "./providers";
 export * from "./tenants";
 export * from "./transactions";

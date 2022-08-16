@@ -1,4 +1,4 @@
-import {Card, BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./paymentMethods";
+import {Card, BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./payment-methods";
 import {GatewayType} from "./providers";
 
 export interface CreateTransactionRequest {
