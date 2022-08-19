@@ -2,53 +2,53 @@ import {Card, BillingDetails, PaymentMethodDetails, PaymentMethodType} from "./p
 import {GatewayType} from "./providers";
 
 export interface CreateTransactionRequest {
-    id: string;
-    tenantId: string;
-    amount: number;
-    currencyCode: string;
-    paymentMethod: PaymentMethodDetails;
-    providerId: string;
-    callback?: string;
-    metadata?: object;
+    readonly id: string;
+    readonly tenantId: string;
+    readonly amount: number;
+    readonly currencyCode: string;
+    readonly paymentMethod: PaymentMethodDetails;
+    readonly providerId: string;
+    readonly callback?: string;
+    readonly metadata?: object;
 }
 
 export interface GetTransactionRequest {
-    id: string;
+    readonly id: string;
 }
 
 export interface TransactionSummary {
-    id: string;
-    tenantId: string;
-    object: string;
-    created: number;
-    amount: number;
-    currencyCode: string;
-    paymentMethod: TransactionPaymentMethod;
-    providerId: string;
-    callback?: string;
-    metadata?: object;
-    lastUpdated: number;
-    status: TransactionStatus;
-    totalEvents: number;
+    readonly id: string;
+    readonly tenantId: string;
+    readonly object: string;
+    readonly created: number;
+    readonly amount: number;
+    readonly currencyCode: string;
+    readonly paymentMethod: TransactionPaymentMethod;
+    readonly providerId: string;
+    readonly callback?: string;
+    readonly metadata?: object;
+    readonly lastUpdated: number;
+    readonly status: TransactionStatus;
+    readonly totalEvents: number;
 }
 
 export interface Transaction extends TransactionSummary {
-    events: TransactionEvent[];
+    readonly events: TransactionEvent[];
 }
 
 export interface TransactionPaymentMethod {
-    type: PaymentMethodType;
-    billingDetails: BillingDetails;
-    card?: Card;
+    readonly type: PaymentMethodType;
+    readonly billingDetails: BillingDetails;
+    readonly card?: Card;
 }
 
 export interface TransactionEvent {
-    object: string;
-    timestamp: number;
-    amountReceived: number;
-    status: TransactionStatus;
-    gateway?: GatewayType;
-    details?: object;
+    readonly object: string;
+    readonly timestamp: number;
+    readonly amountReceived: number;
+    readonly status: TransactionStatus;
+    readonly gateway?: GatewayType;
+    readonly details?: object;
 }
 
 export type TransactionStatus = "Created"|"Processing"|"Successful"|"PaymentFailed";

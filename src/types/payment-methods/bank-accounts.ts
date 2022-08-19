@@ -1,10 +1,10 @@
 export interface BankAccount {
-    last4: string;
-    accountNumber: string;
-    routingNumber: string;
+    readonly last4: string;
+    readonly accountNumber: string;
+    readonly routingNumber: string;
 }
 
 export interface BankAccountDetails {
-    accountNumber: string;
-    routingNumber: string;
+    readonly accountNumber: string;
+    readonly routingNumber: string;
 }

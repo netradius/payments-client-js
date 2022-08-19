@@ -7,7 +7,7 @@ export interface GatewayProviderConfiguration {
 }
 
 export interface AuthorizeNetConfiguration {
-    apiLoginKey: string;
-    transactionKey: string;
-    testMode: boolean;
+    readonly apiLoginKey: string;
+    readonly transactionKey: string;
+    readonly testMode: boolean;
 }

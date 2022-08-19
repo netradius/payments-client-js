@@ -4,24 +4,24 @@ import {BankAccountDetails} from "./bank-accounts";
 export type PaymentMethodType = "Card"|"BankAccount";
 
 export interface PaymentMethodDetails {
-    type: PaymentMethodType;
-    billingDetails: BillingDetails;
-    card?: CardDetails;
-    bankAccount?: BankAccountDetails;
+    readonly type: PaymentMethodType;
+    readonly billingDetails: BillingDetails;
+    readonly card?: CardDetails;
+    readonly bankAccount?: BankAccountDetails;
 }
 
 export interface BillingDetails {
-    address?: BillingAddress;
-    email?: string;
-    name?: string;
-    phone?: string;
+    readonly address?: BillingAddress;
+    readonly email?: string;
+    readonly name?: string;
+    readonly phone?: string;
 }
 
 export interface BillingAddress {
-    city?: string;
-    country?: string;
-    line1?: string;
-    line2?: string;
-    postalCode?: string;
-    state?: string;
+    readonly city?: string;
+    readonly country?: string;
+    readonly line1?: string;
+    readonly line2?: string;
+    readonly postalCode?: string;
+    readonly state?: string;
 }
