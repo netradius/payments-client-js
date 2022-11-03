@@ -1,14 +1,58 @@
 import {HttpClient, HttpResponse, StatusCode} from "./http-client";
-import {BadRequestError, ForbiddenError, InternalServerError, NotFoundError} from "./errors";
+import {
+    BadRequestError,
+    ConflictError,
+    ForbiddenError,
+    InternalServerError,
+    MethodNotAllowedError,
+    NotFoundError,
+    NotImplementedError,
+    UnauthorizedError
+} from "./errors";
 import * as fs from "fs";
 import {ContentType} from "./content-type";
 import {
-    CreateProviderRequest,
-    CreateTenantRequest,
-    CreateTenantResponse, CreateTransactionRequest, GetProviderRequest,
-    GetTenantRequest, GetTransactionRequest, Provider,
-    Tenant, Transaction, UpdateProviderRequest,
-    UpdateTenantRequest
+    AttachPaymentMethodToWalletRequest,
+    AuthorizeNetGatewayProvider,
+    BankPaymentMethod,
+    BankPaymentSummary,
+    CardPaymentMethod,
+    CardPaymentSummary,
+    CreateAuthorizeNetGatewayProviderRequest,
+    CreateBankPaymentMethodRequest,
+    CreateBankPaymentRequest,
+    CreateCardPaymentRequest,
+    CreateCardPaymentMethodRequest,
+    CreateOrganizationRequest,
+    CreateOrganizationResponse,
+    CreatePaymentMethodPaymentRequest,
+    CreateWalletRequest,
+    DeletePaymentMethodRequest,
+    DetachPaymentMethodFromWalletRequest,
+    GetOrganizationRequest,
+    GetPaymentMethodRequest,
+    GetPaymentRequest,
+    GetProviderRequest,
+    GetWalletRequest,
+    ListPaymentMethodsForWalletRequest,
+    ListPaymentMethodsForWalletResponse,
+    ListOrganizationsRequest,
+    ListOrganizationsResponse,
+    ListPaymentMethodsRequest,
+    ListPaymentMethodsResponse,
+    ListPaymentsRequest,
+    ListPaymentsResponse,
+    ListProvidersRequest,
+    ListProvidersResponse,
+    ListWalletsRequest,
+    ListWalletsResponse,
+    Organization,
+    PaymentMethodResponse,
+    PaymentSummaryResponse,
+    ProviderResponse,
+    UpdateAuthorizeNetGatewayProviderRequest,
+    UpdateOrganizationRequest,
+    Wallet
 } from "./types";
 import path = require("path");
 import os = require("os");
@@ -86,30 +130,27 @@ export class PaymentsClient {
                 message = content.message;
             }
         } catch (error) {}
-        if (res.status() === StatusCode.BAD_REQUEST) {
-            throw new BadRequestError(message);
-        }
-        if (res.status() === StatusCode.NOT_FOUND) {
-            throw new NotFoundError(message);
-        }
-        if (res.status() === StatusCode.FORBIDDEN) {
-            throw new ForbiddenError(message);
-        }
-        if (res.status() === StatusCode.INTERNAL_ERROR) {
-            throw new InternalServerError(message);
-        }
-        throw Error(message);
-    }
 
-    protected async sendCommand(command: any, authRequired: boolean, contentType: ContentType, expectedContentType?: ContentType): Promise<any> {
-        const res = await this.client.userAgent(USER_AGENT).request("/").authRequired(authRequired).post().json(command, contentType).send();
-        if (res.success()) {
-            if (expectedContentType !== undefined && expectedContentType !== res.contentType()) {
-                throw new Error(`Expected content type ${expectedContentType} and received ${res.contentType()}`);
-            }
-            return res.status() === StatusCode.NO_CONTENT ? undefined : await res.json();
+        switch (res.status()) {
+            case StatusCode.BAD_REQUEST:
+                throw new BadRequestError(message);
+            case StatusCode.UNAUTHORIZED:
+                throw new UnauthorizedError(message);
+            case StatusCode.FORBIDDEN:
+                throw new ForbiddenError(message);
+            case StatusCode.NOT_FOUND:
+                throw new NotFoundError(message);
+            case StatusCode.METHOD_NOT_ALLOWED:
+                throw new MethodNotAllowedError(message);
+            case StatusCode.CONFLICT:
+                throw new ConflictError(message);
+            case StatusCode.INTERNAL_ERROR:
+                throw new InternalServerError(message);
+            case StatusCode.NOT_IMPLEMENTED:
+                throw new NotImplementedError(message);
+            default:
+                throw Error(message);
         }
-        await this.processFailure(res);
     }
 
     protected async get(authRequired: boolean, path: string): Promise<any> {
@@ -120,64 +161,136 @@ export class PaymentsClient {
         await this.processFailure(res);
     }
 
-    protected async post(request: any, authRequired: boolean, path: string): Promise<any> {
-        const res = await this.client.userAgent(USER_AGENT).request(path).authRequired(authRequired).post().json(request).send();
+    protected async post(request: any, authRequired: boolean, path: string, contentType?: ContentType, expectedContentType?: ContentType): Promise<any> {
+        const res = await this.client.userAgent(USER_AGENT).request(path).authRequired(authRequired).post().json(request, contentType).send();
+        if (res.success()) {
+            if (expectedContentType !== undefined && expectedContentType !== res.contentType()) {
+                throw new Error(`Expected content type ${expectedContentType} and received ${res.contentType()}`);
+            }
+            return res.status() === StatusCode.NO_CONTENT ? undefined : await res.json();
+        }
+        await this.processFailure(res);
+    }
+
+    protected async put(request: any, authRequired: boolean, path: string, contentType?: string, expectedContentType?: ContentType): Promise<any> {
+        const res = await this.client.userAgent(USER_AGENT).request(path).authRequired(authRequired).put().json(request, contentType).send();
+        if (res.success()) {
+            if (expectedContentType !== undefined && expectedContentType !== res.contentType()) {
+                throw new Error(`Expected content type ${expectedContentType} and received ${res.contentType()}`);
+            }
+            return res.status() === StatusCode.NO_CONTENT ? undefined : await res.json();
+        }
+        await this.processFailure(res);
+    }
+
+    protected async delete(authRequired: boolean, path: string): Promise<void> {
+        const res = await this.client.userAgent(USER_AGENT).request(path).authRequired(authRequired).delete().send();
         if (res.success()) {
             return res.status() === StatusCode.NO_CONTENT ? undefined : await res.json();
         }
         await this.processFailure(res);
     }
 
-    protected async put(request: any, authRequired: boolean, path: string): Promise<any> {
-        const res = await this.client.userAgent(USER_AGENT).request(path).authRequired(authRequired).put().json(request).send();
-        if (res.success()) {
-            return res.status() === StatusCode.NO_CONTENT ? undefined : await res.json();
-        }
-        await this.processFailure(res);
+    protected toSearchParams(params: object): string {
+        const searchParams = new URLSearchParams();
+        Object.keys(params).forEach(key => searchParams.append(key, params[key]));
+        return searchParams.toString();
     }
 
-    async createTenant(request: CreateTenantRequest): Promise<CreateTenantResponse> {
-        return await this.post(request, false, "/tenants");
+    async createOrganization(request: CreateOrganizationRequest): Promise<CreateOrganizationResponse> {
+        return await this.post(request, false, "/organizations");
     }
 
-    async getTenant(request: GetTenantRequest): Promise<Tenant> {
-        return await this.get(false, `/tenants/${request.id}`);
+    async listOrganizations(request: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
+        const searchParams = this.toSearchParams(request);
+        return await this.get(false, `/organizations?${searchParams}`);
     }
 
-    async listTenants(): Promise<Tenant[]> {
-        return await this.get(false, "/tenants");
+    async getOrganization(request: GetOrganizationRequest): Promise<Organization> {
+        return await this.get(false, `/organizations/${request.id}`);
     }
 
-    async updateTenant(request: UpdateTenantRequest): Promise<Tenant> {
-        return await this.put(request, false, `/tenants/${request.id}`);
+    async updateOrganization(request: UpdateOrganizationRequest): Promise<void> {
+        return await this.put(request, false, `/organizations/${request.id}`);
     }
 
-    async createProvider(request: CreateProviderRequest): Promise<Provider> {
-        return await this.post(request, true, "/providers");
+    async createAuthorizeNetGatewayProvider(request: CreateAuthorizeNetGatewayProviderRequest): Promise<void> {
+        return await this.post(request, true, "/providers", ContentType.CREATE_PROVIDER_GATEWAY_AUTHORIZE_NET_V1, ContentType.CREATE_PROVIDER_GATEWAY_AUTHORIZE_NET_RESPONSE_V1);
     }
 
-    async getProvider(request: GetProviderRequest): Promise<Provider> {
+    async updateAuthorizeNetGatewayProvider(request: UpdateAuthorizeNetGatewayProviderRequest): Promise<AuthorizeNetGatewayProvider> {
+        return await this.put(request, true, `/providers/${request.id}`, ContentType.UPDATE_PROVIDER_GATEWAY_AUTHORIZE_NET_V1, ContentType.UPDATE_PROVIDER_GATEWAY_AUTHORIZE_NET_RESPONSE_V1);
+    }
+
+    async listProviders(request: ListProvidersRequest): Promise<ListProvidersResponse> {
+        return await this.get(true, `/providers?${this.toSearchParams(request)}`);
+    }
+
+    async getProvider(request: GetProviderRequest): Promise<ProviderResponse> {
         return await this.get(true, `/providers/${request.id}`);
     }
 
-    async listProviders(): Promise<Provider[]> {
-        return await this.get(true, "/providers");
+    async createCardPayment(request: CreateCardPaymentRequest): Promise<CardPaymentSummary> {
+        return await this.post(request, true, "/payments", ContentType.CREATE_PAYMENT_CARD_V1, ContentType.CREATE_PAYMENT_CARD_RESPONSE_V1);
     }
 
-    async updateProvider(request: UpdateProviderRequest): Promise<Provider> {
-        return await this.put(request, true, `/providers/${request.id}`);
+    async createBankPayment(request: CreateBankPaymentRequest): Promise<BankPaymentSummary> {
+        return await this.post(request, true, "/payments", ContentType.CREATE_PAYMENT_BANK_V1, ContentType.CREATE_PAYMENT_BANK_RESPONSE_V1);
     }
 
-    async createTransaction(request: CreateTransactionRequest): Promise<Transaction> {
-        return await this.post(request, true, "/transactions");
+    async createPaymentMethodPayment(request: CreatePaymentMethodPaymentRequest): Promise<PaymentSummaryResponse> {
+        return await this.post(request, true, "/payments", ContentType.CREATE_PAYMENT_PAYMENT_METHOD_V1, ContentType.CREATE_PAYMENT_PAYMENT_METHOD_RESPONSE_V1);
     }
 
-    async getTransaction(request: GetTransactionRequest): Promise<Transaction> {
-        return await this.get(true, `/transactions/${request.id}`);
+    async listPayments(request: ListPaymentsRequest): Promise<ListPaymentsResponse> {
+        return await this.get(true, `/payments?${this.toSearchParams(request)}`);
     }
 
-    async listTransactions(): Promise<Transaction[]> {
-        return await this.get(true, "/transactions");
+    async getPayment(request: GetPaymentRequest): Promise<PaymentMethodResponse> {
+        return await this.get(true, `/payments/${request.id}`);
     }
 
+    async createCardPaymentMethod(request: CreateCardPaymentMethodRequest): Promise<CardPaymentMethod> {
+        return await this.post(request, true, "/payment-methods", ContentType.CREATE_PAYMENT_METHOD_CARD_V1, ContentType.CREATE_PAYMENT_METHOD_CARD_RESPONSE_V1);
+    }
+
+    async createBankPaymentMethod(request: CreateBankPaymentMethodRequest): Promise<BankPaymentMethod> {
+        return await this.post(request, true, "/payment-methods", ContentType.CREATE_PAYMENT_METHOD_BANK_V1, ContentType.CREATE_PAYMENT_METHOD_BANK_RESPONSE_V1);
+    }
+
+    async listPaymentMethods(request: ListPaymentMethodsRequest): Promise<ListPaymentMethodsResponse> {
+        return await this.get(true, `/payment-methods?${this.toSearchParams(request)}`);
+    }
+
+    async getPaymentMethod(request: GetPaymentMethodRequest): Promise<PaymentMethodResponse> {
+        return await this.get(true, `/payment-methods/${request.id}`);
+    }
+
+    async deletePaymentMethod(request: DeletePaymentMethodRequest): Promise<void> {
+        return await this.delete(true, `/payment-methods/${request.id}`);
+    }
+
+    async createWallet(request: CreateWalletRequest): Promise<Wallet> {
+        return await this.post(request, true, `/wallets`);
+    }
+
+    async listWallets(request: ListWalletsRequest): Promise<ListWalletsResponse> {
+        return await this.get(true, `/wallets?${this.toSearchParams(request)}`);
+    }
+
+    async getWallet(request: GetWalletRequest): Promise<Wallet> {
+        return await this.get(true, `/wallets/${request.id}`);
+    }
+
+    async listPaymentMethodsForWallet(request: ListPaymentMethodsForWalletRequest): Promise<ListPaymentMethodsForWalletResponse> {
+        return await this.get(true, `/wallets/${request.walletId}/payment-methods`);
+    }
+
+    async attachPaymentMethodToWallet(request: AttachPaymentMethodToWalletRequest): Promise<void> {
+        return await this.post(undefined,true, `/wallets/${request.walletId}/payment-methods/${request.paymentMethodId}`);
+    }
+
+    async detachPaymentMethodFromWallet(request: DetachPaymentMethodFromWalletRequest): Promise<void> {
+        return await this.delete(true, `/wallets/${request.walletId}/payment-methods/${request.paymentMethodId}`);
+    }
 }

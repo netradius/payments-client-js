@@ -57,8 +57,7 @@ export class HttpRequest {
             this.headers = {
                 ...this.headers,
                 ...this.client.authHeaders
-            }
-            // this.headers = {...this.client.commonHeaders, ...this.client.authHeaders};
+            };
         }
         return this;
     }
@@ -78,6 +77,10 @@ export class HttpRequest {
 
     put(): HttpPutRequest {
         return new HttpPutRequest(this);
+    }
+
+    delete(): HttpDeleteRequest {
+        return new HttpDeleteRequest(this);
     }
 }
 
@@ -246,6 +249,44 @@ export class HttpPutRequest {
     }
 }
 
+export class HttpDeleteRequest {
+
+    readonly request: HttpRequest;
+    headers: Headers;
+    parameters: Parameters;
+    body: string | object;
+
+    constructor(request: HttpRequest) {
+        this.request = request;
+        this.headers = {
+            ...request.headers
+        }
+    }
+
+    async send(): Promise<HttpResponse> {
+        let url = this.request.client.baseUrl + this.request.path;
+        let body = undefined;
+        if (this.parameters !== undefined) {
+            body = new URLSearchParams(this.parameters);
+        } else if (this.body !== undefined) {
+            if (typeof this.body === "string") {
+                body = this.body;
+            } else {
+                body = JSON.stringify(this.body);
+            }
+            // TODO Add Content-Length
+        } else {
+            this.headers["Content-Length"] = "0";
+        }
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: this.headers,
+            body
+        });
+        return new HttpResponse(res);
+    }
+}
+
 export class HttpResponse {
 
     readonly response: Response;
@@ -257,6 +298,7 @@ export class HttpResponse {
     success(): boolean {
         return this.response.status === StatusCode.OK
             || this.response.status === StatusCode.CREATED
+            || this.response.status === StatusCode.ACCEPTED
             || this.response.status === StatusCode.NO_CONTENT;
     }
 
