@@ -16,7 +16,7 @@ export interface GetOrganizationRequest {
 
 export interface UpdateOrganizationRequest {
   readonly id: string;
-  readonly contact: Contact;
+  readonly contact: Partial<Contact>;
 }
 
 export interface ListOrganizationsRequest {
@@ -38,7 +38,7 @@ export interface Organization {
 }
 
 export interface Contact {
-  readonly name: string;
-  readonly email: string;
+  readonly name?: string;
+  readonly email?: string;
 }
 

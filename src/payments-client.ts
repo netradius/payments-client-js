@@ -191,7 +191,9 @@ export class PaymentsClient {
         await this.processFailure(res);
     }
 
-    protected toSearchParams(params: object): string {
+    protected toSearchParams(params?: object): string {
+        if (!params) return "";
+
         const searchParams = new URLSearchParams();
         Object.keys(params).forEach(key => searchParams.append(key, params[key]));
         return searchParams.toString();
@@ -201,7 +203,7 @@ export class PaymentsClient {
         return await this.post(request, false, "/organizations");
     }
 
-    async listOrganizations(request: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
+    async listOrganizations(request?: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
         const searchParams = this.toSearchParams(request);
         return await this.get(false, `/organizations?${searchParams}`);
     }
@@ -222,7 +224,7 @@ export class PaymentsClient {
         return await this.put(request, true, `/providers/${request.id}`, ContentType.UPDATE_PROVIDER_GATEWAY_AUTHORIZE_NET_V1, ContentType.UPDATE_PROVIDER_GATEWAY_AUTHORIZE_NET_RESPONSE_V1);
     }
 
-    async listProviders(request: ListProvidersRequest): Promise<ListProvidersResponse> {
+    async listProviders(request?: ListProvidersRequest): Promise<ListProvidersResponse> {
         return await this.get(true, `/providers?${this.toSearchParams(request)}`);
     }
 
@@ -242,7 +244,7 @@ export class PaymentsClient {
         return await this.post(request, true, "/payments", ContentType.CREATE_PAYMENT_PAYMENT_METHOD_V1, ContentType.CREATE_PAYMENT_PAYMENT_METHOD_RESPONSE_V1);
     }
 
-    async listPayments(request: ListPaymentsRequest): Promise<ListPaymentsResponse> {
+    async listPayments(request?: ListPaymentsRequest): Promise<ListPaymentsResponse> {
         return await this.get(true, `/payments?${this.toSearchParams(request)}`);
     }
 
@@ -258,7 +260,7 @@ export class PaymentsClient {
         return await this.post(request, true, "/payment-methods", ContentType.CREATE_PAYMENT_METHOD_BANK_V1, ContentType.CREATE_PAYMENT_METHOD_BANK_RESPONSE_V1);
     }
 
-    async listPaymentMethods(request: ListPaymentMethodsRequest): Promise<ListPaymentMethodsResponse> {
+    async listPaymentMethods(request?: ListPaymentMethodsRequest): Promise<ListPaymentMethodsResponse> {
         return await this.get(true, `/payment-methods?${this.toSearchParams(request)}`);
     }
 
@@ -274,7 +276,7 @@ export class PaymentsClient {
         return await this.post(request, true, `/wallets`);
     }
 
-    async listWallets(request: ListWalletsRequest): Promise<ListWalletsResponse> {
+    async listWallets(request?: ListWalletsRequest): Promise<ListWalletsResponse> {
         return await this.get(true, `/wallets?${this.toSearchParams(request)}`);
     }
 
