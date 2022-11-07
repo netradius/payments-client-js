@@ -1,5 +1,5 @@
 import {PaymentMethodRequest, PaymentMethod} from "../payment-methods";
-import {PaymentSummary} from "../payments";
+import {PaymentSummary, PaymentRequest} from "../payments";
 
 export interface CreateBankPaymentRequest
   extends PaymentRequest,
